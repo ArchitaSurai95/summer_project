@@ -29,6 +29,7 @@ int* initialise_mass_of_particles(int *mass)
 	for(counter=0;counter<NO_OF_PARTICLES;counter++)
 	printf("%d ",mass[counter]);
 	printf("\n");
+	return mass;
 }
 
 
@@ -97,7 +98,7 @@ float* initialise_distance(float* distance, int* co_ordinates)
 			}
 		}
 	}
-
+	
 	printf("The values of the corresponding distances:\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -106,26 +107,123 @@ float* initialise_distance(float* distance, int* co_ordinates)
 			printf("%.2f ",distance[(row_counter*NO_OF_PARTICLES)+col_counter]); 				
 		}
 		printf("\n");
-	}
+	}	
+	return distance;
 }
+
+
+/** Method to initialise the force between the particles
+  * @param: *force,*distance,*mass: pointer to array storing force,a pointer to the array storing the distance,pointer to array storing 
+  * the mass
+  * modifies contents of the array storing the force (2D array)
+  * returns: a pointer to the array storing the force
+*/
+float* initialise_force(float* force,float* distance,int* mass)
+{
+	int row_counter,col_counter;
+	float r;							// stores distance between the particles
+	int m1,m2;							// stores mass of the two interacting particles;
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	{
+		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
+		{
+			if(row_counter==col_counter)
+				force[(row_counter*NO_OF_PARTICLES)+col_counter]=0;
+			else
+			{
+				r=distance[(row_counter*NO_OF_PARTICLES)+col_counter];
+				m1=mass[row_counter];
+				m2=mass[col_counter];
+				force[(row_counter*NO_OF_PARTICLES)+col_counter]=((G*m1*m2)/(r*r));
+				
+			}
+		}
+	}
+
+	printf("The values of the corresponding forces:\n");
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	{
+		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
+		{
+			printf("%.2f ",force[(row_counter*NO_OF_PARTICLES)+col_counter]); 				
+		}
+		printf("\n");
+	}
+	return force;
+}
+
+
+/** Method to initialise the resultant force between the particles
+  * @param: *resultant_force,*force: pointer to array storing the resultant force,a pointer to the array storing the force
+  * modifies contents of the array storing the resultant force (1D array)
+  * returns: a pointer to the array storing the resultant force
+*/
+float* initialise_resultant_force(float* resultant_force,float* force)
+{
+	int row_counter,col_counter;
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	{
+		resultant_force[row_counter]=0;
+		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
+		{
+			resultant_force[row_counter]+=force[(row_counter*NO_OF_PARTICLES)+col_counter];
+		}
+	}
+	printf("The resultant force on the particles are:\n");
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	printf("%.2f ",resultant_force[row_counter]);
+	printf("\n");
+	return resultant_force;
+}	
+	
 
 /* Driver function for all the above methods */
 int main()
 {
 	int *co_ordinates,*mass;
-	float *distance;
-	int counter,col_counter;
-	time_t timer;
+	float *distance,*force,*resultant_force;
+	int counter,col_counter,row_counter;;
+
 
 	co_ordinates=(int*)malloc(3*NO_OF_PARTICLES*sizeof(int));		// allocating space for the co_ordinates array
+	if(co_ordinates==NULL)
+	{
+		printf("Error in memory allocation");
+		exit(1);
+	}
 	co_ordinates=generate_random_coordinates(co_ordinates);			// method called to generate co-ordinates
 
 	mass=(int*)malloc(NO_OF_PARTICLES*sizeof(int));				// allocating space for the mass array
+	if(mass==NULL)
+	{
+		printf("Error in memory allocation");
+		exit(1);
+	}
 	mass=initialise_mass_of_particles(mass);				// method called to initialise the mass of the particles
 
 	distance=(float*)malloc(NO_OF_PARTICLES*NO_OF_PARTICLES*sizeof(float));	// allocating space for the distance array
+	if(distance==NULL)
+	{
+		printf("Error in memory allocation");
+		exit(1);
+	}
 	distance=initialise_distance(distance,co_ordinates);			// method called to initialize the distance
-	/*initialise_force_on_particles();					// method called to initialise the force on the particles
-*/
+		
+	force=(float*)malloc(NO_OF_PARTICLES*NO_OF_PARTICLES*sizeof(float));	// allocating space for the force array
+	if(force==NULL)
+	{
+		printf("Error in memory allocation");
+		exit(1);
+	}	
+	force=initialise_force(force,distance,mass);				// method called to initialize the force
+	
+	resultant_force=(float*)malloc(NO_OF_PARTICLES*sizeof(float));		// allocating space for the force array
+	if(resultant_force==NULL)
+	{
+		printf("Error in memory allocation");
+		exit(1);
+	}	
+	resultant_force=initialise_resultant_force(resultant_force,force);	// method called to initialize the force
+	
 	return 0;
 }
