@@ -15,16 +15,17 @@
 
 #define G 6.673
 #define NO_OF_PARTICLES 5
-#define NO_OF_STEPS 5
-#define STEP_SIZE .5
+#define NO_OF_STEPS 1
+#define STEP_SIZE 1
 #define DIMENSION 10
+#define R_CUT 1
 
 int co_ordinates[NO_OF_PARTICLES][3],mass[NO_OF_PARTICLES];
 float x_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES],y_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES],
 z_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES];
 float x_force[NO_OF_PARTICLES][NO_OF_PARTICLES],y_force[NO_OF_PARTICLES][NO_OF_PARTICLES],
 z_force[NO_OF_PARTICLES][NO_OF_PARTICLES],resultant_force[NO_OF_PARTICLES][3];
-float initial_velocity[NO_OF_PARTICLES],final_velocity[NO_OF_PARTICLES];
+float initial_velocity[NO_OF_PARTICLES][3],final_velocity[NO_OF_PARTICLES][3];
 
 
 /** Method to initialise the mass of the particles
@@ -37,7 +38,7 @@ void initialise_mass_of_particles()
 	/* loop to initialize the mass of the particles */
 	for(counter=0;counter<NO_OF_PARTICLES;counter++)
 	{
-		mass[counter]=counter+1;
+		mass[counter]=2;
 	}
 
 	/* loop to display the mass of the particles */
@@ -221,6 +222,9 @@ void calculate_x_force()
 				r=x_displacement[row_counter][col_counter];
 				m1=mass[row_counter];
 				m2=mass[col_counter];
+				if(r<R_CUT)
+				x_force[row_counter][col_counter]=0;
+				else
 				x_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
 				
 			}
@@ -259,6 +263,9 @@ void calculate_y_force()
 				r=y_displacement[row_counter][col_counter];
 				m1=mass[row_counter];
 				m2=mass[col_counter];
+				if(r<R_CUT)
+				y_force[row_counter][col_counter]=0;
+				else
 				y_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
 				
 			}
@@ -297,6 +304,9 @@ void calculate_z_force()
 				r=z_displacement[row_counter][col_counter];
 				m1=mass[row_counter];
 				m2=mass[col_counter];
+				if(r<R_CUT)
+				z_force[row_counter][col_counter]=0;
+				else
 				z_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
 				
 			}
@@ -332,7 +342,7 @@ void calculate_resultant_force()
 
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
-		resultant_force[row_counter*NO_OF_PARTICLES][1]=0;
+		resultant_force[row_counter][1]=0;
 		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
 		{
 			resultant_force[row_counter][1]+=y_force[row_counter][col_counter];
@@ -364,9 +374,17 @@ void calculate_resultant_force()
 */
 void initialise_initial_velocity()
 {
-	int counter;
-	for(counter=0;counter<NO_OF_PARTICLES;counter++)
-	initial_velocity[counter]=0;
+	int row_counter,col_counter;
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	for(col_counter=0;col_counter<3;col_counter++)
+	initial_velocity[row_counter][col_counter]=0;
+	printf("initial velocity\n");
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	{
+		for(col_counter=0;col_counter<3;col_counter++)
+		printf("%.2f    ",initial_velocity[row_counter][col_counter]);
+		printf("\n");
+	}
 }
 
 
@@ -375,9 +393,10 @@ void initialise_initial_velocity()
 */
 void initialise_final_velocity()
 {
-	int counter;
-	for(counter=0;counter<NO_OF_PARTICLES;counter++)
-	final_velocity[counter]=0;
+	int row_counter,col_counter;
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	for(col_counter=0;col_counter<3;col_counter++)
+	final_velocity[row_counter][col_counter]=0;
 }
 
 
@@ -392,41 +411,83 @@ void initialise_final_velocity()
   * 7)*distance: pointer to the array storing the distance between the particles
   * modifies contents of the array storing the initial velocity, final velocity, force, resultant force, co-ordinates, distance.
   * returns: void
-
-void velocity_verlet_function(float* initial_velocity,float* final_velocity,float* resultant_force,int* co_ordinates,int* mass,
-float* force,float* distance)
+*/
+void velocity_verlet_function()
 {
-	int counter,step_counter;
+	int counter,step_counter,row_counter,col_counter;
 	for(step_counter=0;step_counter<NO_OF_STEPS;step_counter++)
-	{
+	{	
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
-		final_velocity[counter]=initial_velocity[counter]+((resultant_force[counter]*STEP_SIZE)/(2*mass[counter]));
+		final_velocity[counter][0]=initial_velocity[counter][0]+((resultant_force[counter][0]*STEP_SIZE)/(2*mass[counter]));
+
+		for(counter=0;counter<NO_OF_PARTICLES;counter++)
+		final_velocity[counter][1]=initial_velocity[counter][1]+((resultant_force[counter][1]*STEP_SIZE)/(2*mass[counter]));
+
+		for(counter=0;counter<NO_OF_PARTICLES;counter++)
+		final_velocity[counter][2]=initial_velocity[counter][2]+((resultant_force[counter][2]*STEP_SIZE)/(2*mass[counter]));
+		printf("final velocity\n");
+		for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+		{
+		for(col_counter=0;col_counter<3;col_counter++)
+		printf("%.2f    ",final_velocity[row_counter][col_counter]);
+		printf("\n");
+		}
 
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
 		{
-		co_ordinates[counter*NO_OF_PARTICLES]=(int)co_ordinates[counter*NO_OF_PARTICLES]+(final_velocity[counter]*STEP_SIZE);
-		if(co_ordinates[counter*NO_OF_PARTICLES]>DIMENSION)
-		co_ordinates[counter*NO_OF_PARTICLES]=DIMENSION-(co_ordinates[counter*NO_OF_PARTICLES]-DIMENSION);
+		co_ordinates[counter][0]=(int)co_ordinates[counter][0]+(final_velocity[counter][0]*STEP_SIZE);
+		if(co_ordinates[counter][0]>DIMENSION)
+		co_ordinates[counter][0]=DIMENSION-(co_ordinates[counter][0]-DIMENSION);
 		}
 
-		distance=calculate_distance(distance,co_ordinates);
-		force=calculate_force(force,distance,mass);
-		resultant_force=calculate_resultant_force(resultant_force,force);
-			
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
-		initial_velocity[counter]=final_velocity[counter];
+		{
+		co_ordinates[counter][1]=(int)co_ordinates[counter][1]+(final_velocity[counter][1]*STEP_SIZE);
+		if(co_ordinates[counter][1]>DIMENSION)
+		co_ordinates[counter][1]=DIMENSION-(co_ordinates[counter][1]-DIMENSION);
+		}
 
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
-		final_velocity[counter]=initial_velocity[counter]+((resultant_force[counter]*STEP_SIZE)/(2*mass[counter]));
+		{
+		co_ordinates[counter][2]=(int)co_ordinates[counter][2]+(final_velocity[counter][2]*STEP_SIZE);
+		if(co_ordinates[counter][2]>DIMENSION)
+		co_ordinates[counter][2]=DIMENSION-(co_ordinates[counter][2]-DIMENSION);
+		}
+
+		calculate_x_displacement();
+		calculate_y_displacement();
+		calculate_z_displacement();
+
+
+		calculate_x_force();
+		calculate_y_force();
+		calculate_z_force();
+ 
+		calculate_resultant_force();
+			
+		for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+		for(col_counter=0;col_counter<3;col_counter++)
+		initial_velocity[row_counter][col_counter]=final_velocity[row_counter][col_counter];
+
+		for(counter=0;counter<NO_OF_PARTICLES;counter++)
+		final_velocity[counter][0]=initial_velocity[counter][0]+((resultant_force[counter][0]*STEP_SIZE)/(2*mass[counter]));
+
+		for(counter=0;counter<NO_OF_PARTICLES;counter++)
+		final_velocity[counter][1]=initial_velocity[counter][1]+((resultant_force[counter][1]*STEP_SIZE)/(2*mass[counter]));
+
+		for(counter=0;counter<NO_OF_PARTICLES;counter++)
+		final_velocity[counter][2]=initial_velocity[counter][2]+((resultant_force[counter][2]*STEP_SIZE)/(2*mass[counter]));
+
+
 	}
-}*/	
+}	
 	
 
 /* Driver function for all the above methods */
 int main()
 {
 	
-	int counter;
+	int row_counter,col_counter;
 
 	generate_random_coordinates();			// method called to generate co-ordinates
 	initialise_mass_of_particles();			// method called to initialise the mass of the particles
@@ -439,13 +500,16 @@ int main()
 	calculate_resultant_force();			// method called to initialize the resultant force	
 	initialise_initial_velocity();			// method called to initialize the initial velocity	
 	initialise_final_velocity();			// method called to initialize the final velocity
-	
-	//velocity_verlet_function(initial_velocity,final_velocity,resultant_force,co_ordinates,mass,force,distance);
+			
+	velocity_verlet_function();
 
 	printf("The updated values of velocity are:\n\n");
-	for(counter=0;counter<NO_OF_PARTICLES;counter++)
-	printf("%.2f    ",final_velocity[counter]);
-	printf("\n");
+	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+	{
+		for(col_counter=0;col_counter<3;col_counter++)
+		printf("%.2f    ",final_velocity[row_counter][col_counter]);
+		printf("\n");
+	}
 
 	return 0;
 }
