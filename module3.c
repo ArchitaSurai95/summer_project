@@ -4,7 +4,7 @@
 
 /* Assumptions:
 1) All particles are point mass particles.
-2) Force always acts in positive x-direction.
+2) No external force acts on the system.
 3) All co-ordinates are integer values.
 */
 
@@ -15,8 +15,8 @@
 
 #define G 6.673
 #define NO_OF_PARTICLES 5
-#define NO_OF_STEPS 1
-#define STEP_SIZE 1
+#define NO_OF_STEPS 2
+#define STEP_SIZE .5
 #define DIMENSION 10
 #define R_CUT 1
 
@@ -26,6 +26,8 @@ z_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES];
 float x_force[NO_OF_PARTICLES][NO_OF_PARTICLES],y_force[NO_OF_PARTICLES][NO_OF_PARTICLES],
 z_force[NO_OF_PARTICLES][NO_OF_PARTICLES],resultant_force[NO_OF_PARTICLES][3];
 float initial_velocity[NO_OF_PARTICLES][3],final_velocity[NO_OF_PARTICLES][3];
+
+FILE *fd;
 
 
 /** Method to initialise the mass of the particles
@@ -362,7 +364,7 @@ void calculate_resultant_force()
 	printf("The resultant force on the particles are (of the order of 10^-11 N) :\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
-		printf("%.2fi   %.2fj   %.2fk",resultant_force[row_counter][0],
+		printf("%.2f i  %.2f j  %.2f k",resultant_force[row_counter][0],
 		resultant_force[row_counter][1],resultant_force[row_counter][2]);
 		printf("\n");
 	}
@@ -399,16 +401,21 @@ void initialise_final_velocity()
 	final_velocity[row_counter][col_counter]=0;
 }
 
+/* method to write the co-ordinates in a .xyz file */
+void write_xyz_file()
+{
+	int counter;
+	
+	fprintf(fd,"%d\n\n",NO_OF_PARTICLES);
+	for(counter=0;counter<NO_OF_PARTICLES;counter++)
+	{
+		fprintf(fd,"%c %d %d %d\n",(65+counter),co_ordinates[counter][0],co_ordinates[counter][1],co_ordinates[counter][2]);
+	}
+	fprintf(fd,"\n\n\n");
+}
+
 
 /** Method to calculate the velocity and co-ordinates of the particles after every time step
-  * @param: 
-  * 1)*inital_velocity: pointer to array storing the inital velocity
-  * 2)*final_velocity: pointer to array storing the final velocity
-  * 3)*resultant_force: pointer to the array storing the resultant force between the particles
-  * 4)*co_ordinates: pointer to the array storing the co-ordinates
-  * 5)*mass: pointer to the array storing the mass of the particles
-  * 6)*force: pointer to the array storing the force between the particles
-  * 7)*distance: pointer to the array storing the distance between the particles
   * modifies contents of the array storing the initial velocity, final velocity, force, resultant force, co-ordinates, distance.
   * returns: void
 */
@@ -454,6 +461,8 @@ void velocity_verlet_function()
 		co_ordinates[counter][2]=DIMENSION-(co_ordinates[counter][2]-DIMENSION);
 		}
 
+		write_xyz_file();
+
 		calculate_x_displacement();
 		calculate_y_displacement();
 		calculate_z_displacement();
@@ -489,7 +498,15 @@ int main()
 	
 	int row_counter,col_counter;
 
+	fd = fopen("result.xyz","w");
+	if(fd==NULL)
+	{
+		printf("Error in opening file\n");
+		exit(1);
+	}
+
 	generate_random_coordinates();			// method called to generate co-ordinates
+	write_xyz_file();
 	initialise_mass_of_particles();			// method called to initialise the mass of the particles
 	calculate_x_displacement();			// method called to initialize the x_displacement
 	calculate_y_displacement();			// method called to initialize the y_displacement
@@ -501,7 +518,7 @@ int main()
 	initialise_initial_velocity();			// method called to initialize the initial velocity	
 	initialise_final_velocity();			// method called to initialize the final velocity
 			
-	velocity_verlet_function();
+	velocity_verlet_function();			// method called to keep track of change in velocity
 
 	printf("The updated values of velocity are:\n\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
@@ -510,6 +527,6 @@ int main()
 		printf("%.2f    ",final_velocity[row_counter][col_counter]);
 		printf("\n");
 	}
-
+	fclose(fd);
 	return 0;
 }
