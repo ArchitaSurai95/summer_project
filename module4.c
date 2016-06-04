@@ -14,10 +14,11 @@
 
 #define G 0.6673
 #define NO_OF_PARTICLES 5
-#define NO_OF_STEPS 250
+#define NO_OF_STEPS 300
 #define STEP_SIZE .05
 #define DIMENSION 10
-#define R_CUT 1
+#define R_CUT 2
+#define R_COLLISION 2
 
 float co_ordinates[NO_OF_PARTICLES][3];
 int mass[NO_OF_PARTICLES];
@@ -65,7 +66,7 @@ void generate_random_coordinates()
 	for(counter=0;counter<NO_OF_PARTICLES;counter++)
 	{		
 		for(col_counter=0;col_counter<3;col_counter++)
-		co_ordinates[counter][col_counter]=((rand()%(DIMENSION))+1);
+		co_ordinates[counter][col_counter]=((rand()%(DIMENSION-1))+1);
 		
 	}
 
@@ -73,10 +74,10 @@ void generate_random_coordinates()
 	{
 		for(col_counter=0;col_counter<3;col_counter++)
 		{
-			scanf("%d",&co_ordinates[(counter*NO_OF_PARTICLES)+col_counter]);
+			scanf("%f",&co_ordinates[counter][col_counter]);
 		}
 		printf("\n");
-	}
+	}*/
 
 	/* loop to display the value of the generated co-ordinates of the particles */
 	printf("The value of the generated co-ordinates:\n");
@@ -92,18 +93,35 @@ void generate_random_coordinates()
 
 
 /* method to handle collision between two particles */
-void collision_of_particles(int row_counter, int col_counter, int direction)
+void collision_of_particles(int row_counter, int col_counter)
 {
-	float u1,u2,v1,v2;
+	float xu1,xu2,xv1,xv2,yu1,yu2,yv1,yv2,zu1,zu2,zv1,zv2;
 	int m1,m2;
 	m1=mass[row_counter];
 	m2=mass[col_counter];
-	u1=velocity[row_counter][direction];
-	u2=velocity[col_counter][direction];
-	v1=(u1*(m1-m2)+2*(m2*u2))/(m1+m2);
-	v2=(u2*(m2-m1)+2*(m1*u1))/(m1+m2);
-	velocity[row_counter][direction]=v1;
-	velocity[col_counter][direction]=v2;
+	xu1=velocity[row_counter][0];
+	xu2=velocity[col_counter][0];
+
+	yu1=velocity[row_counter][1];
+	yu2=velocity[col_counter][1];
+
+	zu1=velocity[row_counter][2];
+	zu2=velocity[col_counter][2];
+
+	xv1=(xu1*(m1-m2)+2*(m2*xu2))/(m1+m2);
+	xv2=(xu2*(m2-m1)+2*(m1*xu1))/(m1+m2);
+	velocity[row_counter][0]=xv1;
+	velocity[col_counter][0]=xv2;
+
+	yv1=(yu1*(m1-m2)+2*(m2*yu2))/(m1+m2);
+	yv2=(yu2*(m2-m1)+2*(m1*yu1))/(m1+m2);
+	velocity[row_counter][1]=yv1;
+	velocity[col_counter][1]=yv2;
+
+	zv1=(zu1*(m1-m2)+2*(m2*zu2))/(m1+m2);
+	zv2=(zu2*(m2-m1)+2*(m1*zu1))/(m1+m2);
+	velocity[row_counter][2]=zv1;
+	velocity[col_counter][2]=zv2;
 }
 
 
@@ -248,11 +266,11 @@ void calculate_x_force()
 				if(r<R_CUT)
 				{
 					x_force[row_counter][col_counter]=0;
-					collision_of_particles(row_counter,col_counter,1);
+					//collision_of_particles(row_counter,col_counter,0);
 				}
 				else
 				x_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
-				if(r1<r2)
+				if(r1>r2)
 				x_force[row_counter][col_counter]=-x_force[row_counter][col_counter];
 				
 			}
@@ -296,11 +314,11 @@ void calculate_y_force()
 				if(r<R_CUT)
 				{
 					y_force[row_counter][col_counter]=0;
-					collision_of_particles(row_counter,col_counter,2);
+					//collision_of_particles(row_counter,col_counter,1);
 				}
 				else
 				y_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
-				if(r1<r2)
+				if(r1>r2)
 				y_force[row_counter][col_counter]=-y_force[row_counter][col_counter];
 				
 			}
@@ -344,11 +362,11 @@ void calculate_z_force()
 				if(r<R_CUT)
 				{
 					z_force[row_counter][col_counter]=0;
-					collision_of_particles(row_counter,col_counter,2);
+					//collision_of_particles(row_counter,col_counter,2);
 				}
 				else
 				z_force[row_counter][col_counter]=((G*m1*m2)/(r*r));
-				if(r1<r2)
+				if(r1>r2)
 				z_force[row_counter][col_counter]=-z_force[row_counter][col_counter];
 				
 			}
@@ -442,6 +460,7 @@ void write_xyz_file()
 void velocity_verlet_function()
 {
 	int counter,step_counter,row_counter,col_counter;
+	float x1,x2,y1,y2,z1,z2,r;
 	for(step_counter=0;step_counter<NO_OF_STEPS;step_counter++)
 	{	
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
@@ -503,6 +522,25 @@ void velocity_verlet_function()
 			co_ordinates[counter][2]=abs(co_ordinates[counter][2]);
 			velocity[counter][2]=abs(velocity[counter][2]);
 		}
+		}
+
+		for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
+		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
+		{
+			if(row_counter==col_counter)  continue;
+			x1=co_ordinates[row_counter][0];
+			x2=co_ordinates[col_counter][0];
+
+			y1=co_ordinates[row_counter][1];
+			y2=co_ordinates[col_counter][1];	
+
+			z1=co_ordinates[row_counter][2];
+			z2=co_ordinates[col_counter][2];
+
+			r=((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2))+((z1-z2)*(z1-z2));
+			r=sqrt(r);
+			if(r<R_COLLISION)
+			{printf("collision\n\n\n");collision_of_particles(row_counter,col_counter);}
 		}
 
 		write_xyz_file();
