@@ -14,7 +14,7 @@
 
 #define G 0.6673
 #define NO_OF_PARTICLES 5
-#define NO_OF_STEPS 300
+#define NO_OF_STEPS 500
 #define STEP_SIZE .05
 #define DIMENSION 10
 #define R_CUT 2
@@ -99,6 +99,7 @@ void collision_of_particles(int row_counter, int col_counter)
 	int m1,m2;
 	m1=mass[row_counter];
 	m2=mass[col_counter];
+
 	xu1=velocity[row_counter][0];
 	xu2=velocity[col_counter][0];
 
@@ -152,7 +153,7 @@ void calculate_x_displacement()
 		}
 	}
 
-	/* loop to display the displacement in x direction between the particles */	
+	/* loop to display the displacement in x direction between the particles 	
 	printf("The values of the corresponding displacements in x direction:\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -161,7 +162,7 @@ void calculate_x_displacement()
 			printf("%.2f     ",x_displacement[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}	
+	}*/	
 }
 
 
@@ -190,7 +191,7 @@ void calculate_y_displacement()
 		}
 	}
 
-	/* loop to display the displacement in y direction between the particles */	
+	/* loop to display the displacement in y direction between the particles 	
 	printf("The values of the corresponding displacements in y direction:\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -199,7 +200,7 @@ void calculate_y_displacement()
 			printf("%.2f     ",y_displacement[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}	
+	}*/	
 }
 
 
@@ -228,7 +229,7 @@ void calculate_z_displacement()
 		}
 	}
 
-	/* loop to display the displacement in z direction between the particles */	
+	/* loop to display the displacement in z direction between the particles 	
 	printf("The values of the corresponding displacements in z direction:\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -237,7 +238,7 @@ void calculate_z_displacement()
 			printf("%.2f     ",z_displacement[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}	
+	}*/	
 }
 
 
@@ -277,7 +278,7 @@ void calculate_x_force()
 		}
 	}
 
-	/* loop to display the force between the particles in x direction */
+	/* loop to display the force between the particles in x direction 
 	printf("The values of the corresponding forces in x direction(of the order of 10^-11 N) :\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -286,7 +287,7 @@ void calculate_x_force()
 			printf("%.2f     ",x_force[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}
+	}*/
 }
 
 
@@ -325,7 +326,7 @@ void calculate_y_force()
 		}
 	}
 
-	/* loop to display the force between the particles in y direction */
+	/* loop to display the force between the particles in y direction 
 	printf("The values of the corresponding forces in y direction(of the order of 10^-11 N) :\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -334,7 +335,7 @@ void calculate_y_force()
 			printf("%.2f     ",y_force[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}
+	}*/
 }
 
 
@@ -373,7 +374,7 @@ void calculate_z_force()
 		}
 	}
 
-	/* loop to display the force between the particles in z direction */
+	/* loop to display the force between the particles in z direction 
 	printf("The values of the corresponding forces in z direction(of the order of 10^-11 N) :\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
@@ -382,7 +383,7 @@ void calculate_z_force()
 			printf("%.2f     ",z_force[row_counter][col_counter]); 				
 		}
 		printf("\n");
-	}
+	}*/
 }
 
 /** Method to calculate the resultant force between the particles
@@ -418,14 +419,14 @@ void calculate_resultant_force()
 		}
 	}
 
-	/* loop to display the resultant force acting on the particles */
+	/* loop to display the resultant force acting on the particles 
 	printf("The resultant force on the particles are (of the order of 10^-11 N) :\n");
 	for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 	{
 		printf("%.2f i  %.2f j  %.2f k",resultant_force[row_counter][0],
 		resultant_force[row_counter][1],resultant_force[row_counter][2]);
 		printf("\n");
-	}
+	}*/
 }
 
 
@@ -471,13 +472,13 @@ void velocity_verlet_function()
 
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
 		velocity[counter][2]=velocity[counter][2]+((resultant_force[counter][2]*STEP_SIZE)/(2*mass[counter]));
-		printf("velocity\n");
+		/*printf("velocity\n");
 		for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
 		{
 		for(col_counter=0;col_counter<3;col_counter++)
 		printf("%.2f    ",velocity[row_counter][col_counter]);
 		printf("\n");
-		}
+		}*/
 
 		for(counter=0;counter<NO_OF_PARTICLES;counter++)
 		{
@@ -525,22 +526,25 @@ void velocity_verlet_function()
 		}
 
 		for(row_counter=0;row_counter<NO_OF_PARTICLES;row_counter++)
-		for(col_counter=0;col_counter<NO_OF_PARTICLES;col_counter++)
 		{
-			if(row_counter==col_counter)  continue;
-			x1=co_ordinates[row_counter][0];
-			x2=co_ordinates[col_counter][0];
+			for(col_counter=row_counter+1;col_counter<NO_OF_PARTICLES;col_counter++)
+			{
+				x1=co_ordinates[row_counter][0];
+				x2=co_ordinates[col_counter][0];
 
-			y1=co_ordinates[row_counter][1];
-			y2=co_ordinates[col_counter][1];	
+				y1=co_ordinates[row_counter][1];
+				y2=co_ordinates[col_counter][1];	
 
-			z1=co_ordinates[row_counter][2];
-			z2=co_ordinates[col_counter][2];
+				z1=co_ordinates[row_counter][2];
+				z2=co_ordinates[col_counter][2];
 
-			r=((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2))+((z1-z2)*(z1-z2));
-			r=sqrt(r);
-			if(r<R_COLLISION)
-			{printf("collision\n\n\n");collision_of_particles(row_counter,col_counter);}
+				r=((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2))+((z1-z2)*(z1-z2));
+				//r=sqrt(r);
+				if(r<(R_COLLISION*R_COLLISION))
+				{//printf("collision\n\n\n%d\n\n\n",step_counter);
+				collision_of_particles(row_counter,col_counter);
+				}
+			}
 		}
 
 		write_xyz_file();
@@ -576,7 +580,7 @@ int main()
 	
 	int row_counter,col_counter;
 
-	fd = fopen("result.xyz","w");
+	fd = fopen("result1.xyz","w");
 	if(fd==NULL)
 	{
 		printf("Error in opening file\n");
@@ -593,7 +597,7 @@ int main()
 	calculate_y_force();				// method called to initialize the y_force	
 	calculate_z_force();				// method called to initialize the z_force	
 	calculate_resultant_force();			// method called to initialize the resultant force		
-	initialise_velocity();			// method called to initialize the velocity
+	initialise_velocity();				// method called to initialize the velocity
 			
 	velocity_verlet_function();			// method called to keep track of change in velocity
 
