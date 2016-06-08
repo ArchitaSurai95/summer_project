@@ -20,7 +20,7 @@
 #define R_CUT 2
 #define R_COLLISION 2
 
-float co_ordinates[NO_OF_PARTICLES][3];
+float co_ordinates[NO_OF_PARTICLES][3],temp[3];
 int mass[NO_OF_PARTICLES];
 float x_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES],y_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES],
 z_displacement[NO_OF_PARTICLES][NO_OF_PARTICLES];
@@ -53,12 +53,46 @@ void initialise_mass_of_particles()
 }
 
 
+/** Method to check initial displacement between the particles
+  * modifies contents of array storing the initial_displacement
+  * return 1 if the generated co-ordinates are possible for the exixtence of a particle
+  * else return -1
+*/
+int check_displacement(int counter)
+{
+	int iterator,flag;
+	float x1,x2,y1,y2,z1,z2,r;
+	if(counter==0) 
+	{
+		flag=1;
+		return flag;
+	}
+	x1=temp[0];
+	y1=temp[1];
+	z1=temp[2];
+	for(iterator=0;iterator<counter;iterator++)
+	{
+		x2=co_ordinates[iterator][0];
+		y2=co_ordinates[iterator][1];
+		z2=co_ordinates[iterator][2];
+		r=((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2))+((z1-z2)*(z1-z2));
+		if(r<(R_COLLISION*R_COLLISION))
+		{
+			flag=0;
+			return flag;
+		}
+	}
+	flag=1;
+	return flag;
+}
+
+
 /** Method to generate random co-ordinates for the particles
   * modifies contents of the array storing the co-ordinates (2D array)
 */
 void generate_random_coordinates()
 {
-	int counter,col_counter;
+	int counter,col_counter,flag;
 	time_t timer;	
 	srand((unsigned) time(&timer));			//initializing the random number generator
 
@@ -66,8 +100,24 @@ void generate_random_coordinates()
 	for(counter=0;counter<NO_OF_PARTICLES;counter++)
 	{		
 		for(col_counter=0;col_counter<3;col_counter++)
-		co_ordinates[counter][col_counter]=((rand()%(DIMENSION-1))+1);
-		
+		temp[col_counter]=((rand()%(DIMENSION-1))+1);
+		flag=check_displacement(counter);
+		if(flag)
+		{
+			for(col_counter=0;col_counter<3;col_counter++)			
+			co_ordinates[counter][col_counter]=temp[col_counter];
+		}
+		else
+		{
+			while(flag!=1)
+			{
+				for(col_counter=0;col_counter<3;col_counter++)
+				temp[col_counter]=((rand()%(DIMENSION-1))+1);
+				flag=check_displacement(counter);
+			}
+			for(col_counter=0;col_counter<3;col_counter++)			
+			co_ordinates[counter][col_counter]=temp[col_counter];
+		}
 	}
 
 	/*for(counter=0;counter<NO_OF_PARTICLES;counter++)
